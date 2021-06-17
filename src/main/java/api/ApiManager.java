@@ -27,7 +27,7 @@ public class ApiManager {
     }
 
     public static ApiResponse executeWithBody(ApiRequest apiRequest){
-        Response response = buildRequest(apiRequest)
+        Response response = buildRequest(apiRequest).body(apiRequest.getBody())
                 .body(apiRequest.getBody())
                 .request(apiRequest.getMethod().name()
                         ,apiRequest.getEndpoint());
