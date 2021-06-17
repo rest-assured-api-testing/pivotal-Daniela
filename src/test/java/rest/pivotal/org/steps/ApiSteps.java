@@ -1,6 +1,10 @@
 package rest.pivotal.org.steps;
 
-import api.*;
+import api.ApiRequestBuilder;
+import api.ApiRequest;
+import api.ApiResponse;
+import api.ApiMethod;
+import api.ApiManager;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

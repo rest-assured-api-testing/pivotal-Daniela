@@ -1,5 +1,5 @@
 Feature: Requests for projects endpoint
-  description
+  description 2
 
   @CreateProject
   Scenario: Get a Project
