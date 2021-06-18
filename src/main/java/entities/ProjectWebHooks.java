@@ -4,25 +4,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.Date;
 
-public class AccountMembership {
+public class ProjectWebHooks {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String kind;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Long id;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public Person person;
-    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    public int account_id;
+    public Long project_id;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String webhook_url;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Date created_at;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public Date updated_at;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public boolean owner;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public boolean admin;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public boolean project_creator;
+    public boolean enabled;
 
     public String getKind() {
         return kind;
@@ -40,20 +36,20 @@ public class AccountMembership {
         this.id = id;
     }
 
-    public Person getPerson() {
-        return person;
+    public Long getProject_id() {
+        return project_id;
     }
 
-    public void setPerson(Person person) {
-        this.person = person;
+    public void setProject_id(Long project_id) {
+        this.project_id = project_id;
     }
 
-    public int getAccount_id() {
-        return account_id;
+    public String getWebhook_url() {
+        return webhook_url;
     }
 
-    public void setAccount_id(int account_id) {
-        this.account_id = account_id;
+    public void setWebhook_url(String webhook_url) {
+        this.webhook_url = webhook_url;
     }
 
     public Date getCreated_at() {
@@ -72,28 +68,11 @@ public class AccountMembership {
         this.updated_at = updated_at;
     }
 
-    public boolean isOwner() {
-        return owner;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setOwner(boolean owner) {
-        this.owner = owner;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
-
-    public boolean isAdmin() {
-        return admin;
-    }
-
-    public void setAdmin(boolean admin) {
-        this.admin = admin;
-    }
-
-    public boolean isProject_creator() {
-        return project_creator;
-    }
-
-    public void setProject_creator(boolean project_creator) {
-        this.project_creator = project_creator;
-    }
-
 }

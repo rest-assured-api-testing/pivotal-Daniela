@@ -8,7 +8,6 @@ import org.testng.annotations.Test;
 public class AccountTest {
     ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
     ApiRequest apiRequest = new ApiRequest();
-    ApiRequest apiRequest2 = new ApiRequest();
 
     @BeforeTest
     public void initialConfiguration() {
@@ -27,6 +26,7 @@ public class AccountTest {
     @Test(groups = "getRequests")
     public void getAccounts() {
         apiRequest = requestBuilder.endpoint("accounts")
+                .clearParams()
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
@@ -35,6 +35,7 @@ public class AccountTest {
     @Test(groups = "getRequests")
     public void getAccountSummaries() {
         apiRequest = requestBuilder.endpoint("account_summaries")
+                .clearParams()
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
@@ -42,7 +43,6 @@ public class AccountTest {
 
     @Test(groups = "getRequests")
     public void getAAccount() {
-        ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
         apiRequest = requestBuilder.endpoint("accounts/{id}")
                 .pathParms("id", "1155186")
                 .build();

@@ -8,7 +8,7 @@ public class Person {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String kind;
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
-    public int id;
+    public Long id;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String name;
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -26,11 +26,11 @@ public class Person {
         this.kind = kind;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

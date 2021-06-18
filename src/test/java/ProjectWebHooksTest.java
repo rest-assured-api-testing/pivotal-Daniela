@@ -1,19 +1,22 @@
 import api.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import entities.Epic;
 import entities.Project;
+import entities.ProjectWebHooks;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
-public class EpicTest {
+public class ProjectWebHooksTest {
     ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
     ApiRequest apiRequest = new ApiRequest();
     ApiRequest apiRequest2 = new ApiRequest();
     Project project = new Project();
     Project project2 = new Project();
-    Epic epics = new Epic();
+    ProjectWebHooks testWebHook = new ProjectWebHooks();
 
     @BeforeTest
     public void initialConfiguration() {
@@ -54,7 +57,7 @@ public class EpicTest {
     public void createProject() throws JsonProcessingException {
         System.out.println("------------------------- create project");
         Project testProject = new Project();
-        testProject.setName("Task List 101");
+        testProject.setName("Project Lists");
         ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
         apiRequest = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
                 .baseUri("https://www.pivotaltracker.com/services/v5")
@@ -69,7 +72,7 @@ public class EpicTest {
     public void createProject2() throws JsonProcessingException {
         System.out.println("------------------------- create a project");
         Project testProject = new Project();
-        testProject.setName("Task List 102");
+        testProject.setName("Project List");
         ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
         apiRequest2 = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
                 .baseUri("https://www.pivotaltracker.com/services/v5")
@@ -78,21 +81,23 @@ public class EpicTest {
                 .body(new ObjectMapper().writeValueAsString(testProject))
                 .build();
         project2 = ApiManager.executeWithBody(apiRequest2).getBody(Project.class);
+
     }
 
     @BeforeMethod(dependsOnMethods = "createProject", onlyForGroups = "createProject")
-    public void createEpic() throws JsonProcessingException {
-        Epic epic = new Epic();
-        epic.setName("new epics");
+    public void createProjectWebHook() throws JsonProcessingException {
+        System.out.println("---------------- create WebHook");
+        ProjectWebHooks projectWebHooks = new ProjectWebHooks();
+        projectWebHooks.setWebhook_url("https:///story/show/561");
         ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
         apiRequest = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
                 .baseUri("https://www.pivotaltracker.com/services/v5")
-                .endpoint("projects/{project_id}/epics")
+                .endpoint("projects/{project_id}/webhooks")
                 .method(ApiMethod.POST)
                 .pathParms("project_id", project.getId().toString())
-                .body(new ObjectMapper().writeValueAsString(epic))
+                .body(new ObjectMapper().writeValueAsString(projectWebHooks))
                 .build();
-        epics = ApiManager.executeWithBody(apiRequest).getBody(Epic.class);
+        testWebHook = ApiManager.executeWithBody(apiRequest).getBody(ProjectWebHooks.class);
     }
 
     @AfterMethod(onlyForGroups = {"createProject"})
@@ -122,9 +127,8 @@ public class EpicTest {
     }
 
     @Test(groups = {"getRequests", "createAProject"})
-    public void getEpicsTest() {
-        apiRequest = requestBuilder
-                .endpoint("projects/{project_id}/epics")
+    public void getProjectWebHooksTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks")
                 .clearParams()
                 .pathParms("project_id", project2.getId().toString())
                 .build();
@@ -132,52 +136,53 @@ public class EpicTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
-    @Test(groups = {"postRequests", "createProject"})
-    public void createEpicTest() throws JsonProcessingException {
-        Epic epic = new Epic();
-        epic.setName("New Epic");
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics")
-                .pathParms("project_id", project.getId().toString())
-                .body(new ObjectMapper().writeValueAsString(epic))
+    @Test(groups = {"postRequests", "createAProject"})
+    public void createProjectWebHooksTest() throws JsonProcessingException {
+        ProjectWebHooks projectWebHooks = new ProjectWebHooks();
+        projectWebHooks.setWebhook_url("https:///story/show/560");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks")
+                .pathParms("project_id", project2.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(projectWebHooks))
                 .build();
         ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
-        epics = apiResponse.getBody(Epic.class);
+        testWebHook = apiResponse.getBody(ProjectWebHooks.class);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
-        Assert.assertEquals(epics.getName(), "New Epic");
+        Assert.assertEquals(testWebHook.getWebhook_url(), "https:///story/show/560");
     }
 
     @Test(groups = {"getRequests", "createProject"})
-    public void getAEpicTest() {
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+    public void getAProjectWebHookTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
                 .pathParms("project_id", project.getId().toString())
-                .pathParms("epic_id", epics.getId().toString())
+                .pathParms("webhook_id", testWebHook.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"putRequests", "createProject"})
-    public void updateAEpicTest() throws JsonProcessingException {
-        Epic epic = new Epic();
-        epic.setDescription("new description");
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+    public void updateAProjectWebHookTest() throws JsonProcessingException {
+        ProjectWebHooks projectWebHooks = new ProjectWebHooks();
+        projectWebHooks.setWebhook_url("https:///story/show/555");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
                 .pathParms("project_id", project.getId().toString())
-                .pathParms("epic_id", epics.getId().toString())
-                .body(new ObjectMapper().writeValueAsString(epic))
+                .pathParms("webhook_id", testWebHook.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(projectWebHooks))
                 .build();
         ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
-        epics = apiResponse.getBody(Epic.class);
+        testWebHook = apiResponse.getBody(ProjectWebHooks.class);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
-        Assert.assertEquals(epics.getDescription(), "new description");
+        Assert.assertEquals(testWebHook.getWebhook_url(), "https:///story/show/555");
     }
 
     @Test(groups = {"deleteRequests", "createProject"})
     public void deleteAEpicTest() {
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
                 .pathParms("project_id", project.getId().toString())
-                .pathParms("epic_id", epics.getId().toString())
+                .pathParms("webhook_id", testWebHook.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
     }
+
 }

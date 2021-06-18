@@ -14,7 +14,6 @@ public class ProjectsTest {
     ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
     ApiRequest apiRequest = new ApiRequest();
     ApiRequest apiRequest2 = new ApiRequest();
-    ApiResponse apiResponse;
     Project project = new Project();
 
     @BeforeTest

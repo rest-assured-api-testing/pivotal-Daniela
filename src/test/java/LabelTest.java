@@ -1,19 +1,22 @@
 import api.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import entities.Epic;
+import entities.Label;
 import entities.Project;
 import org.apache.http.HttpStatus;
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
-public class EpicTest {
+public class LabelTest {
     ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
     ApiRequest apiRequest = new ApiRequest();
     ApiRequest apiRequest2 = new ApiRequest();
     Project project = new Project();
     Project project2 = new Project();
-    Epic epics = new Epic();
+    Label testLabel = new Label();
 
     @BeforeTest
     public void initialConfiguration() {
@@ -54,7 +57,7 @@ public class EpicTest {
     public void createProject() throws JsonProcessingException {
         System.out.println("------------------------- create project");
         Project testProject = new Project();
-        testProject.setName("Task List 101");
+        testProject.setName("New Task List");
         ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
         apiRequest = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
                 .baseUri("https://www.pivotaltracker.com/services/v5")
@@ -65,11 +68,26 @@ public class EpicTest {
         project = ApiManager.executeWithBody(apiRequest).getBody(Project.class);
     }
 
+    @BeforeMethod(dependsOnMethods = "createProject", onlyForGroups = "createProject")
+    public void createLabel() throws JsonProcessingException {
+        Label label = new Label();
+        label.setName("new label");
+        ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
+        apiRequest = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
+                .baseUri("https://www.pivotaltracker.com/services/v5")
+                .endpoint("projects/{project_id}/labels")
+                .method(ApiMethod.POST)
+                .pathParms("project_id", project.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(label))
+                .build();
+        testLabel = ApiManager.executeWithBody(apiRequest).getBody(Label.class);
+    }
+
     @BeforeMethod(onlyForGroups = "createAProject")
     public void createProject2() throws JsonProcessingException {
         System.out.println("------------------------- create a project");
         Project testProject = new Project();
-        testProject.setName("Task List 102");
+        testProject.setName("Tasks Lists");
         ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
         apiRequest2 = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
                 .baseUri("https://www.pivotaltracker.com/services/v5")
@@ -78,21 +96,6 @@ public class EpicTest {
                 .body(new ObjectMapper().writeValueAsString(testProject))
                 .build();
         project2 = ApiManager.executeWithBody(apiRequest2).getBody(Project.class);
-    }
-
-    @BeforeMethod(dependsOnMethods = "createProject", onlyForGroups = "createProject")
-    public void createEpic() throws JsonProcessingException {
-        Epic epic = new Epic();
-        epic.setName("new epics");
-        ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
-        apiRequest = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
-                .baseUri("https://www.pivotaltracker.com/services/v5")
-                .endpoint("projects/{project_id}/epics")
-                .method(ApiMethod.POST)
-                .pathParms("project_id", project.getId().toString())
-                .body(new ObjectMapper().writeValueAsString(epic))
-                .build();
-        epics = ApiManager.executeWithBody(apiRequest).getBody(Epic.class);
     }
 
     @AfterMethod(onlyForGroups = {"createProject"})
@@ -122,9 +125,9 @@ public class EpicTest {
     }
 
     @Test(groups = {"getRequests", "createAProject"})
-    public void getEpicsTest() {
+    public void getProjectLabelsTest() {
         apiRequest = requestBuilder
-                .endpoint("projects/{project_id}/epics")
+                .endpoint("projects/{project_id}/labels")
                 .clearParams()
                 .pathParms("project_id", project2.getId().toString())
                 .build();
@@ -132,25 +135,25 @@ public class EpicTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
-    @Test(groups = {"postRequests", "createProject"})
-    public void createEpicTest() throws JsonProcessingException {
-        Epic epic = new Epic();
-        epic.setName("New Epic");
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics")
-                .pathParms("project_id", project.getId().toString())
-                .body(new ObjectMapper().writeValueAsString(epic))
+    @Test(groups = {"postRequests", "createAProject"})
+    public void createProjectLabelTest() throws JsonProcessingException {
+        Label label = new Label();
+        label.setName("new label");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels")
+                .pathParms("project_id", project2.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(label))
                 .build();
         ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
-        epics = apiResponse.getBody(Epic.class);
+        testLabel = apiResponse.getBody(Label.class);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
-        Assert.assertEquals(epics.getName(), "New Epic");
+        Assert.assertEquals(testLabel.getName(), "new label");
     }
 
     @Test(groups = {"getRequests", "createProject"})
     public void getAEpicTest() {
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
                 .pathParms("project_id", project.getId().toString())
-                .pathParms("epic_id", epics.getId().toString())
+                .pathParms("label_id", testLabel.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
@@ -158,26 +161,27 @@ public class EpicTest {
 
     @Test(groups = {"putRequests", "createProject"})
     public void updateAEpicTest() throws JsonProcessingException {
-        Epic epic = new Epic();
-        epic.setDescription("new description");
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+        Label label = new Label();
+        label.setName("new label name");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
                 .pathParms("project_id", project.getId().toString())
-                .pathParms("epic_id", epics.getId().toString())
-                .body(new ObjectMapper().writeValueAsString(epic))
+                .pathParms("label_id", testLabel.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(label))
                 .build();
         ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
-        epics = apiResponse.getBody(Epic.class);
+        testLabel = apiResponse.getBody(Label.class);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
-        Assert.assertEquals(epics.getDescription(), "new description");
+        Assert.assertEquals(testLabel.getName(), "new label name");
     }
 
     @Test(groups = {"deleteRequests", "createProject"})
     public void deleteAEpicTest() {
-        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
                 .pathParms("project_id", project.getId().toString())
-                .pathParms("epic_id", epics.getId().toString())
+                .pathParms("label_id", testLabel.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
     }
+
 }

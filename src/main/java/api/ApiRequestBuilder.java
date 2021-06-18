@@ -64,6 +64,11 @@ public class ApiRequestBuilder implements IBuilder {
         return this;
     }
 
+    public ApiRequestBuilder clearParams() {
+        pathParms.clear();
+        return this;
+    }
+
     @Override
     public ApiRequest build() {
         ApiRequest apiRequest = new ApiRequest();
