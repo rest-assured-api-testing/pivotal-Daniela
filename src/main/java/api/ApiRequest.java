@@ -64,6 +64,18 @@ public class ApiRequest {
         this.method = method;
     }
 
+//    public void addHeaders(final String header, final String value) {
+//        headers.add(new Header(header, value));
+//    }
+//
+//    public void addQueryParams(final String param, final String value) {
+//        queryParams.put(param, value);
+//    }
+//
+//    public void addPathParams(final String param, final String value) {
+//        pathParms.put(param, value);
+//    }
+
     public void addHeaders(List<Header> headers) {
         this.headers = headers;
     }
@@ -88,3 +100,4 @@ public class ApiRequest {
         return pathParms;
     }
 }
+

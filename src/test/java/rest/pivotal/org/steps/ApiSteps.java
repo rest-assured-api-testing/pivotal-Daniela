@@ -30,7 +30,7 @@ public class ApiSteps {
     @Before
     public void createProject() throws JsonProcessingException {
         Project projectTemp = new Project();
-        projectTemp.setName("Task List 2");
+        projectTemp.setName("Task List 3");
         apiRequest = requestBuilder.baseUri(baseUri)
                 .header("X-TrackerToken","ab535e3e5e63442f37c020243e5360eb")
                 .endpoint("projects")
