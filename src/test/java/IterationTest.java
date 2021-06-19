@@ -96,6 +96,16 @@ public class IterationTest {
     }
 
     @Test(groups = {"getRequests", "createAProject"})
+    public void getProjectIterationsWithWrongProjectIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/iterations")
+                .clearParams()
+                .pathParms("project_id", project.getId().toString() + "a")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(groups = {"getRequests", "createAProject"})
     public void getAProjectIterationTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/iterations/{number}")
                 .clearParams()
@@ -106,8 +116,19 @@ public class IterationTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getAProjectIterationWithWrongNumberTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/iterations/{number}")
+                .clearParams()
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("number", "2")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_BAD_REQUEST);
+    }
+
     @Test(groups = {"putRequests", "createAProject"})
-    public void updateAProjectStoryTest() throws JsonProcessingException {
+    public void updateAProjectIterationTest() throws JsonProcessingException {
         Iteration iteration = new Iteration();
         iteration.setLength(8);
         iteration.setTeam_strength(5);
@@ -123,6 +144,22 @@ public class IterationTest {
         Assert.assertEquals(testIteration.getTeam_strength(),5);
     }
 
+    @Test(groups = {"putRequests", "createAProject"})
+    public void updateAProjectIterationAndCompareLengthTest() throws JsonProcessingException {
+        Iteration iteration = new Iteration();
+        iteration.setLength(8);
+        iteration.setTeam_strength(5);
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/iteration_overrides/{number}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("number", "1")
+                .body(new ObjectMapper().writeValueAsString(iteration))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testIteration = apiResponse.getBody(Iteration.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(testIteration.getLength(), 0);
+    }
+
     @Test(groups = {"getRequests", "createAProject"})
     public void getIterationsAnalyticsOfAProjectTest() {
         apiRequest = requestBuilder.endpoint("/projects/{projectId}/iterations/{number}/analytics")
@@ -132,8 +169,21 @@ public class IterationTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         analytics = apiResponse.getBody(Analytics.class);
-        Assert.assertEquals(apiResponse.getStatusCode(), 200);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         Assert.assertEquals(analytics.getKind(), "analytics");
+    }
+
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getIterationsAnalyticsOfAProjectAndCompareKindTest() {
+        apiRequest = requestBuilder.endpoint("/projects/{projectId}/iterations/{number}/analytics")
+                .clearParams()
+                .pathParms("projectId", project.getId().toString())
+                .pathParms("number", "1")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        analytics = apiResponse.getBody(Analytics.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(analytics.getKind(), "");
     }
 
     @Test(groups = {"getRequests", "createAProject"})
@@ -144,7 +194,18 @@ public class IterationTest {
                 .pathParms("number", "1")
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
-        Assert.assertEquals(apiResponse.getStatusCode(), 200);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getIterationsAnalyticsDetailsOfAProjectWithWrongNumberTest() {
+        apiRequest = requestBuilder.endpoint("projects/{projectId}/iterations/{number}/analytics/cycle_time_details")
+                .clearParams()
+                .pathParms("projectId", project.getId().toString())
+                .pathParms("number", "2")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_BAD_REQUEST);
     }
 
 }

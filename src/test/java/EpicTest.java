@@ -134,6 +134,17 @@ public class EpicTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getEpicsWithWrongProjectIdTest() {
+        apiRequest = requestBuilder
+                .endpoint("projects/{project_id}/epics")
+                .clearParams()
+                .pathParms("project_id", project2.getId().toString() + "00")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
     @Test(groups = {"postRequests", "createProject"})
     public void createEpicTest() throws JsonProcessingException {
         Epic epic = new Epic();
@@ -148,6 +159,20 @@ public class EpicTest {
         Assert.assertEquals(epics.getName(), "New Epic");
     }
 
+    @Test(groups = {"postRequests", "createProject"})
+    public void createEpicAndCompareNameTest() throws JsonProcessingException {
+        Epic epic = new Epic();
+        epic.setName("New Epic");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics")
+                .pathParms("project_id", project.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(epic))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        epics = apiResponse.getBody(Epic.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(epics.getName(), "new epic");
+    }
+
     @Test(groups = {"getRequests", "createProject"})
     public void getAEpicTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
@@ -159,6 +184,16 @@ public class EpicTest {
     }
 
     @Test(groups = {"getRequests", "createProject"})
+    public void getAEpicWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("epic_id", epics.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
     public void getAEpicActivityTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
                 .pathParms("project_id", project.getId().toString())
@@ -166,6 +201,16 @@ public class EpicTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
+    public void getAEpicActivityWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("epic_id", "0000000")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(groups = {"putRequests", "createProject"})
@@ -183,6 +228,21 @@ public class EpicTest {
         Assert.assertEquals(epics.getDescription(), "new description");
     }
 
+    @Test(groups = {"putRequests", "createProject"})
+    public void updateAEpicAndCompareDescriptionTest() throws JsonProcessingException {
+        Epic epic = new Epic();
+        epic.setDescription("new description");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("epic_id", epics.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(epic))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        epics = apiResponse.getBody(Epic.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(epics.getDescription(), "new descriptions");
+    }
+
     @Test(groups = {"deleteRequests", "createProject"})
     public void deleteAEpicTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
@@ -192,4 +252,15 @@ public class EpicTest {
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
     }
+
+    @Test(groups = {"deleteRequests", "createProject"})
+    public void deleteAEpicWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("epic_id", "aaaaaaa")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_BAD_REQUEST);
+    }
+
 }

@@ -107,7 +107,21 @@ public class WorkspaceTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
     }
 
-    @AfterGroups(groups = "createAWorkspaceProject")
+    @AfterMethod(onlyForGroups = {"deleteWorkspaceAfter"})
+    public void deleteWorkspaceAfter() {
+        ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
+        apiRequest = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
+                .baseUri("https://www.pivotaltracker.com/services/v5")
+                .endpoint("my/workspaces/{workspace_id}")
+                .method(ApiMethod.DELETE)
+                .clearParams()
+                .pathParms("workspace_id", testWorkspaces.getId().toString())
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
+    }
+
+    @AfterMethod(onlyForGroups = "createAWorkspaceProject")
     public void deleteProjectById() {
         ApiRequestBuilder requestBuilder = new ApiRequestBuilder();
         apiRequest = requestBuilder.header("X-TrackerToken", "ab535e3e5e63442f37c020243e5360eb")
@@ -143,7 +157,20 @@ public class WorkspaceTest {
         Assert.assertEquals(workspaces.getName(),"The workspace");
     }
 
-    @Test(groups = {"putRequests", "createAWorkspaceProject"})
+    @Test(groups = {"postRequests", "deleteWorkspace"})
+    public void createWorkspacesAndCompareName() throws JsonProcessingException {
+        Workspaces workspaces = new Workspaces();
+        workspaces.setName("The workspace");
+        apiRequest = requestBuilder
+                .endpoint("my/workspaces")
+                .body(new ObjectMapper().writeValueAsString(workspaces))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testWorkspaces = apiResponse.getBody(Workspaces.class);
+        Assert.assertNotEquals(workspaces.getName(),"");
+    }
+
+    @Test(groups = {"putRequests", "createAWorkspaceProject", "deleteWorkspace"})
     public void updateWorkspace() throws JsonProcessingException {
         Workspaces workspaces = new Workspaces();
         List<Object> project_ids=new ArrayList<>();
@@ -155,9 +182,25 @@ public class WorkspaceTest {
                 .body(new ObjectMapper().writeValueAsString(workspaces))
                 .build();
         ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
-        apiResponse.getResponse().then().log().body();
         testWorkspaces = apiResponse.getBody(Workspaces.class);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"putRequests", "createAWorkspaceProject", "deleteWorkspace"})
+    public void updateWorkspaceAndCompareName() throws JsonProcessingException {
+        Workspaces workspaces = new Workspaces();
+        List<Object> project_ids=new ArrayList<>();
+        project_ids.add(project.getId());
+        workspaces.setProject_ids(project_ids);
+        apiRequest = requestBuilder
+                .endpoint("my/workspaces/{workspace_id}")
+                .pathParms("workspace_id",testWorkspaces.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(workspaces))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testWorkspaces = apiResponse.getBody(Workspaces.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(workspaces.getProject_ids().indexOf(0), 0);
     }
 
     @Test(groups = {"deleteRequests", "createWorkspace"})
@@ -168,6 +211,16 @@ public class WorkspaceTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
+    }
+
+    @Test(groups = {"deleteRequests", "createWorkspace", "deleteWorkspaceAfter"})
+    public void deleteAWorkspaceWithWrongId() {
+        apiRequest = requestBuilder
+                .endpoint("my/workspaces/{workspace_id}")
+                .pathParms("workspace_id", testWorkspaces.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 
 }

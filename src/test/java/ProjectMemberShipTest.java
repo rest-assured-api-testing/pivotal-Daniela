@@ -138,6 +138,16 @@ public class ProjectMemberShipTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getProjectMembershipsWithWrongProjectIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/memberships")
+                .clearParams()
+                .pathParms("project_id", project2.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
     @Test(groups = {"postRequests", "createAProject"})
     public void createProjectMembershipTest() throws JsonProcessingException {
         ProjectMembership projectMembership = new ProjectMembership();
@@ -152,6 +162,20 @@ public class ProjectMemberShipTest {
         Assert.assertEquals(projectMembership.getRole(), "member");
     }
 
+    @Test(groups = {"postRequests", "createAProject"})
+    public void createProjectMembershipAndCompareRoleTest() throws JsonProcessingException {
+        ProjectMembership projectMembership = new ProjectMembership();
+        projectMembership.setEmail("example@email.com");
+        projectMembership.setRole("member");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/memberships")
+                .pathParms("project_id", project2.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(projectMembership))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(projectMembership.getRole(), "");
+    }
+
     @Test(groups = {"getRequests", "createProject"})
     public void getAProjectMembershipTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/memberships/{memberId}")
@@ -161,6 +185,16 @@ public class ProjectMemberShipTest {
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         Assert.assertEquals(testmembership.getKind(), "project_membership");
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
+    public void getAProjectMembershipWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/memberships/{memberId}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("memberId", testmembership.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(groups = {"putRequests", "createProject"})
@@ -178,6 +212,21 @@ public class ProjectMemberShipTest {
         Assert.assertEquals(testmembership.getRole(), "viewer");
     }
 
+    @Test(groups = {"putRequests", "createProject"})
+    public void updateAProjectMembershipAndCompareRoleTest() throws JsonProcessingException {
+        ProjectMembership projectMembership = new ProjectMembership();
+        projectMembership.setRole("viewer");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/memberships/{memberId}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("memberId", testmembership.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(projectMembership))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testmembership = apiResponse.getBody(Membership.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(testmembership.getRole(), "member");
+    }
+
     @Test(groups = {"deleteRequests", "createProject"})
     public void deleteAProjectMembershipTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/memberships/{memberId}")
@@ -186,6 +235,16 @@ public class ProjectMemberShipTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
+    }
+
+    @Test(groups = {"deleteRequests", "createProject"})
+    public void deleteAProjectMembershipWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/memberships/{memberId}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("memberId", "sssssss")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_BAD_REQUEST);
     }
 
 }

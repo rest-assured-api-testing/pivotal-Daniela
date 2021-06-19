@@ -136,6 +136,16 @@ public class ProjectWebHooksTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getProjectWebHooksWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks")
+                .clearParams()
+                .pathParms("project_id", project2.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
     @Test(groups = {"postRequests", "createAProject"})
     public void createProjectWebHooksTest() throws JsonProcessingException {
         ProjectWebHooks projectWebHooks = new ProjectWebHooks();
@@ -150,6 +160,20 @@ public class ProjectWebHooksTest {
         Assert.assertEquals(testWebHook.getWebhook_url(), "https:///story/show/560");
     }
 
+    @Test(groups = {"postRequests", "createAProject"})
+    public void createProjectWebHooksAndCompareUrlTest() throws JsonProcessingException {
+        ProjectWebHooks projectWebHooks = new ProjectWebHooks();
+        projectWebHooks.setWebhook_url("https:///story/show/560");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks")
+                .pathParms("project_id", project2.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(projectWebHooks))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testWebHook = apiResponse.getBody(ProjectWebHooks.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(testWebHook.getWebhook_url(), "");
+    }
+
     @Test(groups = {"getRequests", "createProject"})
     public void getAProjectWebHookTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
@@ -158,6 +182,16 @@ public class ProjectWebHooksTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
+    public void getAProjectWebHookWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("webhook_id", testWebHook.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(groups = {"putRequests", "createProject"})
@@ -175,14 +209,39 @@ public class ProjectWebHooksTest {
         Assert.assertEquals(testWebHook.getWebhook_url(), "https:///story/show/555");
     }
 
+    @Test(groups = {"putRequests", "createProject"})
+    public void updateAProjectWebHookAndCompareUrlTest() throws JsonProcessingException {
+        ProjectWebHooks projectWebHooks = new ProjectWebHooks();
+        projectWebHooks.setWebhook_url("https:///story/show/555");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("webhook_id", testWebHook.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(projectWebHooks))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testWebHook = apiResponse.getBody(ProjectWebHooks.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(testWebHook.getWebhook_url(), "https:///story/show/561");
+    }
+
     @Test(groups = {"deleteRequests", "createProject"})
-    public void deleteAEpicTest() {
+    public void deleteAProjectWebHookTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
                 .pathParms("project_id", project.getId().toString())
                 .pathParms("webhook_id", testWebHook.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
+    }
+
+    @Test(groups = {"deleteRequests", "createProject"})
+    public void deleteAProjectWebHookWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/webhooks/{webhook_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("webhook_id", testWebHook.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 
 }

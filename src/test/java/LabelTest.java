@@ -135,6 +135,17 @@ public class LabelTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getProjectLabelsWithWrongProjectIdTest() {
+        apiRequest = requestBuilder
+                .endpoint("projects/{project_id}/labels")
+                .clearParams()
+                .pathParms("project_id", project2.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
     @Test(groups = {"postRequests", "createAProject"})
     public void createProjectLabelTest() throws JsonProcessingException {
         Label label = new Label();
@@ -149,8 +160,22 @@ public class LabelTest {
         Assert.assertEquals(testLabel.getName(), "new label");
     }
 
+    @Test(groups = {"postRequests", "createAProject"})
+    public void createProjectLabelAndCompareNameTest() throws JsonProcessingException {
+        Label label = new Label();
+        label.setName("new label");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels")
+                .pathParms("project_id", project2.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(label))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testLabel = apiResponse.getBody(Label.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(testLabel.getName(), "");
+    }
+
     @Test(groups = {"getRequests", "createProject"})
-    public void getAEpicTest() {
+    public void getALabelTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
                 .pathParms("project_id", project.getId().toString())
                 .pathParms("label_id", testLabel.getId().toString())
@@ -159,8 +184,18 @@ public class LabelTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = {"getRequests", "createProject"})
+    public void getALabelWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("label_id", testLabel.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
     @Test(groups = {"putRequests", "createProject"})
-    public void updateAEpicTest() throws JsonProcessingException {
+    public void updateALabelTest() throws JsonProcessingException {
         Label label = new Label();
         label.setName("new label name");
         apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
@@ -174,14 +209,39 @@ public class LabelTest {
         Assert.assertEquals(testLabel.getName(), "new label name");
     }
 
+    @Test(groups = {"putRequests", "createProject"})
+    public void updateALabelAndCompareNameTest() throws JsonProcessingException {
+        Label label = new Label();
+        label.setName("new label name");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("label_id", testLabel.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(label))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        testLabel = apiResponse.getBody(Label.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(testLabel.getName(), "new label");
+    }
+
     @Test(groups = {"deleteRequests", "createProject"})
-    public void deleteAEpicTest() {
+    public void deleteALabelTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
                 .pathParms("project_id", project.getId().toString())
                 .pathParms("label_id", testLabel.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
+    }
+
+    @Test(groups = {"deleteRequests", "createProject"})
+    public void deleteALabelWithEmptyIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/labels/{label_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("label_id", "q")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_BAD_REQUEST);
     }
 
 }

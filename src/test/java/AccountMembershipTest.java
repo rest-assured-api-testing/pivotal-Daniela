@@ -51,6 +51,9 @@ public class AccountMembershipTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
     }
 
+    /**
+     * Gets a account membership
+     */
     @Test(groups = "getRequests")
     public void getAccountMembership() {
         apiRequest = requestBuilder.endpoint("/accounts/{account_id}/memberships")

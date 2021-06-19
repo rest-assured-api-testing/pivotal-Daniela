@@ -139,6 +139,16 @@ public class StoryTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = {"getRequests", "createAProject"})
+    public void getProjectStoriesWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("/projects/{project_id}/stories")
+                .clearParams()
+                .pathParms("project_id", project2.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
     @Test(groups = {"postRequests", "createAProject"})
     public void createProjectStoryTest() throws JsonProcessingException {
         Story story = new Story();
@@ -153,6 +163,20 @@ public class StoryTest {
         Assert.assertEquals(stories.getName(), "First story");
     }
 
+    @Test(groups = {"postRequests", "createAProject"})
+    public void createProjectStoryAndCompareNameTest() throws JsonProcessingException {
+        Story story = new Story();
+        story.setName("First story");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/stories")
+                .pathParms("project_id", project2.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(story))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        stories = apiResponse.getBody(Story.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(stories.getName(), "");
+    }
+
     @Test(groups = {"getRequests", "createProject"})
     public void getAProjectStoryActivityTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}/activity")
@@ -164,6 +188,16 @@ public class StoryTest {
     }
 
     @Test(groups = {"getRequests", "createProject"})
+    public void getAProjectStoryActivityWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}/activity")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("story_id", stories.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
     public void getAProjectStoryTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}")
                 .pathParms("project_id", project.getId().toString())
@@ -171,6 +205,16 @@ public class StoryTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
+    public void getAProjectStoryWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("story_id", stories.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(groups = {"putRequests", "createProject"})
@@ -188,14 +232,39 @@ public class StoryTest {
         Assert.assertEquals(stories.getName(), "New story name");
     }
 
+    @Test(groups = {"putRequests", "createProject"})
+    public void updateAProjectStoryAndCompareNameTest() throws JsonProcessingException {
+        Story story = new Story();
+        story.setName("New story name");
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("story_id", stories.getId().toString())
+                .body(new ObjectMapper().writeValueAsString(story))
+                .build();
+        ApiResponse apiResponse = ApiManager.executeWithBody(apiRequest);
+        stories = apiResponse.getBody(Story.class);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        Assert.assertNotEquals(stories.getName(), "First story");
+    }
+
     @Test(groups = {"deleteRequests", "createProject"})
-    public void deleteAEpicTest() {
+    public void deleteAProjectStoryTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}")
                 .pathParms("project_id", project.getId().toString())
                 .pathParms("story_id", stories.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
+    }
+
+    @Test(groups = {"deleteRequests", "createProject"})
+    public void deleteAProjectStoryWithWrongIdTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("story_id", stories.getId().toString() + "0")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_BAD_REQUEST);
     }
 
 }
