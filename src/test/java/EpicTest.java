@@ -102,6 +102,8 @@ public class EpicTest {
                 .baseUri("https://www.pivotaltracker.com/services/v5")
                 .endpoint("/projects/{projectId}")
                 .method(ApiMethod.DELETE)
+                .clearQueryParams()
+                .clearParams()
                 .pathParms("projectId", project.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
@@ -148,6 +150,16 @@ public class EpicTest {
 
     @Test(groups = {"getRequests", "createProject"})
     public void getAEpicTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("epic_id", epics.getId().toString())
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
+    public void getAEpicActivityTest() {
         apiRequest = requestBuilder.endpoint("projects/{project_id}/epics/{epic_id}")
                 .pathParms("project_id", project.getId().toString())
                 .pathParms("epic_id", epics.getId().toString())

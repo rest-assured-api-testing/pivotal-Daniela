@@ -67,8 +67,10 @@ public class ProjectsTest {
 
     @AfterMethod(onlyForGroups = "updateProject")
     public void deleteProjects() {
-        apiRequest = requestBuilder
+        apiRequest = requestBuilder.endpoint("/projects/{projectId}")
                 .method(ApiMethod.DELETE)
+                .clearParams()
+                .clearQueryParams()
                 .pathParms("projectId", project.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
@@ -83,6 +85,38 @@ public class ProjectsTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
+    }
+
+    @Test(groups = "getRequests")
+    public void getAllProjectTest() {
+        apiRequest2 = requestBuilder
+                .endpoint("/projects")
+                .clearParams()
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest2);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"getRequests", "updateProject"})
+    public void getAProjectTest() {
+        apiRequest2 = requestBuilder.endpoint("/projects/{projectId}")
+                .method(ApiMethod.GET)
+                .pathParms("projectId", project.getId().toString())
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest2);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+        apiResponse.validateBodySchema("schemas/project.json");
+    }
+
+    @Test(groups = {"getRequests", "updateProject"})
+    public void getProjectActivityTest() {
+        apiRequest2 = requestBuilder.endpoint("projects/{project_id}/activity")
+                .method(ApiMethod.GET)
+                .pathParms("project_id", project.getId().toString())
+                .queryParams("limit","1")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest2);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"postRequests", "deleteProjectById"})
@@ -119,26 +153,6 @@ public class ProjectsTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NO_CONTENT);
-    }
-
-    @Test(groups = "getRequests")
-    public void getAllProjectTest() {
-        apiRequest2 = requestBuilder
-                .endpoint("/projects")
-                .build();
-        ApiResponse apiResponse = ApiManager.execute(apiRequest);
-        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
-    }
-
-    @Test(groups = "getRequests")
-    public void getAProjectTest() {
-        apiRequest2 = requestBuilder.endpoint("/projects/{projectId}")
-                .method(ApiMethod.GET)
-                .pathParms("projectId", "2505058")
-                .build();
-        ApiResponse apiResponse = ApiManager.execute(apiRequest2);
-        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
-        apiResponse.validateBodySchema("schemas/project.json");
     }
 
 }

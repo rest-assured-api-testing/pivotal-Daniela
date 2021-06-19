@@ -108,6 +108,8 @@ public class StoryTest {
                 .baseUri("https://www.pivotaltracker.com/services/v5")
                 .endpoint("/projects/{projectId}")
                 .method(ApiMethod.DELETE)
+                .clearQueryParams()
+                .clearParams()
                 .pathParms("projectId", project.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
@@ -149,6 +151,16 @@ public class StoryTest {
         stories = apiResponse.getBody(Story.class);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
         Assert.assertEquals(stories.getName(), "First story");
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
+    public void getAProjectStoryActivityTest() {
+        apiRequest = requestBuilder.endpoint("projects/{project_id}/stories/{story_id}/activity")
+                .pathParms("project_id", project.getId().toString())
+                .pathParms("story_id", stories.getId().toString())
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
     @Test(groups = {"getRequests", "createProject"})
