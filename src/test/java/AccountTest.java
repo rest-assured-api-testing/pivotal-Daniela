@@ -51,4 +51,31 @@ public class AccountTest {
         apiResponse.validateBodySchema("schemas/account.json");
     }
 
+    @Test(groups = "getRequests")
+    public void getAWrongAccount() {
+        apiRequest = requestBuilder.endpoint("accounts/{id}")
+                .pathParms("id", "0000000")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(groups = "getRequests")
+    public void getAForbiddenAccount() {
+        apiRequest = requestBuilder.endpoint("accounts/{id}")
+                .pathParms("id", "1155100")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test(groups = "getRequests")
+    public void getAForbiddenIdAccount() {
+        apiRequest = requestBuilder.endpoint("accounts/{id}")
+                .pathParms("id", "aaaaaaaa")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
 }

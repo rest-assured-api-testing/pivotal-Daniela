@@ -60,12 +60,23 @@ public class MeTest {
     @Test(groups = {"getRequests", "createProject"})
     public void getPeople() {
         apiRequest = requestBuilder
-                .endpoint("/me/people")
+                .endpoint("my/people")
                 .clearParams()
                 .queryParams("project_id", project.getId().toString())
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
-        Assert.assertEquals(apiResponse.getStatusCode(), 404);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = {"getRequests", "createProject"})
+    public void getPeopleOfWrongProject() {
+        apiRequest = requestBuilder
+                .endpoint("me/people")
+                .clearParams()
+                .queryParams("project_id", project.getId().toString() + "00")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(groups = "getRequests")
@@ -76,5 +87,15 @@ public class MeTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), 200);
+    }
+
+    @Test(groups = "getRequests")
+    public void getMeWithWrongEndpoint() {
+        apiRequest = requestBuilder
+                .endpoint("/me/me")
+                .clearParams()
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 }

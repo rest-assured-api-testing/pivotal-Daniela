@@ -60,6 +60,24 @@ public class AccountMembershipTest {
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
+    @Test(groups = "getRequests")
+    public void getWrongAccountMembership() {
+        apiRequest = requestBuilder.endpoint("/accounts/{account_id}/memberships")
+                .pathParms("account_id","0000000")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(groups = "getRequests")
+    public void getForbiddenAccountMembership() {
+        apiRequest = requestBuilder.endpoint("/accounts/{account_id}/memberships")
+                .pathParms("account_id","1155100")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_FORBIDDEN);
+    }
+
     @Test(groups = {"postRequests", "deleteMembership"})
     public void createAccountMembership() throws JsonProcessingException {
         person.setEmail("example@email.com");

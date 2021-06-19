@@ -1,4 +1,5 @@
 import api.*;
+import org.apache.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeTest;
@@ -30,7 +31,28 @@ public class NotificationsTest {
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         apiResponse.getResponse().then().log().body();
-        Assert.assertEquals(apiResponse.getStatusCode(), 200);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = "getRequests")
+    public void getEmptyNotificationTest() {
+        apiRequest = requestBuilder
+                .endpoint("/my/notifications")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        apiResponse.getResponse().then().log().body();
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = "getRequests")
+    public void getNotificationWithEmptyQueryTest() {
+        apiRequest = requestBuilder
+                .endpoint("my/notifications")
+                .queryParams("envelope", "")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        apiResponse.getResponse().then().log().body();
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
     }
 
 }

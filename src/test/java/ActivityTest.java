@@ -25,10 +25,18 @@ public class ActivityTest {
     }
 
     @Test(groups = "getRequests")
-    public void getAProjectStoryTest() {
+    public void getAProjectActivityTest() {
         apiRequest = requestBuilder.endpoint("my/activity")
                 .build();
         ApiResponse apiResponse = ApiManager.execute(apiRequest);
         Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_OK);
+    }
+
+    @Test(groups = "getRequests")
+    public void getAWrongProjectActivityTest() {
+        apiRequest = requestBuilder.endpoint("my/activities")
+                .build();
+        ApiResponse apiResponse = ApiManager.execute(apiRequest);
+        Assert.assertEquals(apiResponse.getStatusCode(), HttpStatus.SC_NOT_FOUND);
     }
 }
